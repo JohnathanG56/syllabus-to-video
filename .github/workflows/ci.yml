@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unit:
+    name: Unit + pipeline tests (no Docker, no Manim)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: System deps
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Python deps
+        run: pip install -r requirements-dev.txt
+      - name: Tests
+        run: pytest -m "not docker and not manim" -q
+
+  render:
+    name: Real Manim renders (LocalRunner)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: System deps
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg libcairo2-dev libpango1.0-dev pkg-config
+      - name: Python deps
+        run: pip install -r requirements-dev.txt -r requirements-local-render.txt
+      - name: Manim tests (MathTex ones skip without LaTeX)
+        run: pytest -m manim -q -rs
+
+  sandbox:
+    name: Docker sandbox boundary tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Python deps
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg && pip install -r requirements-dev.txt
+      - name: Build sandbox image
+        run: docker build -t stv-manim-sandbox:latest sandbox/
+      - name: Docker tests (timeout kill, no network, read-only FS, pids/memory caps)
+        run: pytest -m docker -q -rs
