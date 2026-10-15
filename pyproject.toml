@@ -12,6 +12,7 @@ markers = [
     "docker: needs a running Docker daemon and the sandbox image (auto-skipped otherwise)",
     "manim: needs Manim importable on the host (auto-skipped otherwise)",
     "piper: needs a Piper voice + engine (auto-skipped otherwise)",
+    "ffmpeg: needs ffmpeg + ffprobe on PATH (auto-skipped otherwise)",
 ]
 filterwarnings = [
     "ignore::DeprecationWarning",
