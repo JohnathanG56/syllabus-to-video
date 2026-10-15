@@ -2,7 +2,9 @@
 #
 # Build:   docker build -t stv-manim-sandbox:latest sandbox/
 # The official image ships Manim + cairo/pango + ffmpeg + a TeX install with
-# dvisvgm, so MathTex works. It is published for linux/amd64 and linux/arm64.
+# dvisvgm, so MathTex works. On Apple Silicon, if this tag has no arm64 variant
+# (`docker manifest inspect manimcommunity/manim:v0.19.0`), build with
+# `--platform linux/amd64` and Docker Desktop will run it under Rosetta.
 #
 # The image alone is not the sandbox: the runtime flags in sandbox/run.py are
 # (--network none, --read-only, --memory/--cpus/--pids-limit, --cap-drop ALL,
