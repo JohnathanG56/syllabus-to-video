@@ -1,0 +1,5 @@
+# Only needed for RENDER_BACKEND=local (UNSAFE, dev-only: renders LLM code
+# directly on the host) and for the `manim`-marked tests.
+# Needs system libs: cairo, pango, ffmpeg (+ a LaTeX install with dvisvgm for MathTex).
+# macOS: brew install cairo pango pkg-config ffmpeg && brew install --cask mactex-no-gui
+manim==0.19.0
