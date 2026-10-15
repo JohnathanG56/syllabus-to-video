@@ -13,6 +13,18 @@ if str(ROOT) not in sys.path:
 MANIM_AVAILABLE = importlib.util.find_spec("manim") is not None
 FFMPEG_AVAILABLE = shutil.which("ffmpeg") is not None and shutil.which("ffprobe") is not None
 SANDBOX_IMAGE = os.environ.get("SANDBOX_IMAGE", "stv-manim-sandbox:latest")
+VOICE = ROOT / "voices" / "en_US-lessac-medium.onnx"
+LOCAL_PIPER_BIN = ROOT / "voices" / "piper" / "piper"
+
+
+def piper_engine() -> tuple[str, str | None] | None:
+    """(backend, binary) usable for real TTS in tests, or None."""
+    if not VOICE.exists():
+        return None
+    if importlib.util.find_spec("piper") is not None:
+        return ("piper-python", None)
+    binary = os.environ.get("PIPER_BIN") or (str(LOCAL_PIPER_BIN) if LOCAL_PIPER_BIN.exists() else None)
+    return ("piper-cli", binary) if binary else None
 
 
 def _docker_ready() -> bool:
@@ -30,6 +42,8 @@ def pytest_collection_modifyitems(config, items):
                 docker_ok = _docker_ready()
             if not docker_ok:
                 item.add_marker(pytest.mark.skip(reason=f"docker daemon or image {SANDBOX_IMAGE} unavailable"))
+        if "piper" in item.keywords and piper_engine() is None:
+            item.add_marker(pytest.mark.skip(reason="no Piper voice/engine (run scripts/download_voice.py)"))
         if "ffmpeg" in item.keywords and not FFMPEG_AVAILABLE:
             item.add_marker(pytest.mark.skip(reason="ffmpeg/ffprobe not installed"))
 
