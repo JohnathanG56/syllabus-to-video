@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import ast
 import json
+import re
 from pathlib import Path
 
 from core import prompts
@@ -38,13 +39,21 @@ def timing_header(durations: list[float]) -> str:
                       f"SEGMENT_ENDS = {segment_ends(durs)}", HEADER_END])
 
 
+_NUMBERED = re.compile(r"^\s*\d+ \| ?")
+
+
 def strip_code_fences(code: str) -> str:
+    """Remove markdown fences and, if the model echoed our numbered listing
+    (repair prompts show code as '  12 | ...'), the line-number gutter."""
     s = code.strip()
     if s.startswith("```"):
         s = s.split("\n", 1)[1] if "\n" in s else ""
         if s.rstrip().endswith("```"):
             s = s.rstrip()[:-3]
-    return s.strip() + "\n"
+    lines = s.strip("\n").splitlines()
+    if lines and sum(bool(_NUMBERED.match(ln)) for ln in lines) >= 0.8 * len(lines):
+        lines = [_NUMBERED.sub("", ln, count=1) for ln in lines]
+    return "\n".join(lines).strip("\n") + "\n"
 
 
 def inject_timing(code: str, durations: list[float]) -> str:
