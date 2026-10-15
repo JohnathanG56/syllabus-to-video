@@ -63,6 +63,7 @@ class Settings:
     # --- rendering ---
     render_backend: str  # "docker" | "local"
     sandbox_image: str
+    sandbox_mount_entry: bool  # mount sandbox/render_entry.py into the container (off inside compose)
     validate_quality: str  # manim quality flag letter for validation renders
     final_quality: str  # quality for the final re-render
     validate_timeout_s: int
@@ -97,6 +98,7 @@ def get_settings() -> Settings:
         llm_temperature=float(temp) if temp is not None else None,
         render_backend=_env("RENDER_BACKEND", "docker").lower(),
         sandbox_image=_env("SANDBOX_IMAGE", "stv-manim-sandbox:latest"),
+        sandbox_mount_entry=_env_bool("SANDBOX_MOUNT_ENTRY", True),
         validate_quality=_env("VALIDATE_QUALITY", "l"),
         final_quality=_env("FINAL_QUALITY", "m"),
         validate_timeout_s=_env_int("VALIDATE_TIMEOUT_S", 180),

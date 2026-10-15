@@ -1,0 +1,46 @@
+# API + worker in containers; renders still happen in throwaway sandbox
+# containers that the worker starts on the HOST Docker daemon.
+#
+#   docker build -t stv-manim-sandbox:latest sandbox/    # once
+#   python scripts/download_voice.py                     # once (writes ./voices)
+#   docker compose up --build                            # http://localhost:8000
+#
+# Why data/ and out/ are mounted at ${PWD}/...: the worker passes file paths to
+# `docker run -v <path>:...`, and the host daemon resolves those paths on the
+# host. Mounting them at the identical absolute path makes them line up.
+#
+# Security trade-off: mounting docker.sock gives the worker container
+# root-equivalent control of the Docker host. It is acceptable for a local,
+# single-user setup; for anything shared, run the worker natively (see README)
+# or use a rootless/remote Docker context dedicated to rendering.
+x-app: &app
+  build: .
+  env_file: .env
+  environment:
+    DATA_DIR: ${PWD}/data
+    OUT_DIR: ${PWD}/out
+    PIPER_VOICE: /app/voices/en_US-lessac-medium.onnx
+    RENDER_BACKEND: docker
+    SANDBOX_MOUNT_ENTRY: "0"
+  volumes:
+    - ./data:${PWD}/data
+    - ./out:${PWD}/out
+    - ./voices:/app/voices:ro
+
+services:
+  api:
+    <<: *app
+    command: ["uvicorn", "api.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "8000:8000"
+
+  worker:
+    <<: *app
+    command: ["python", "-m", "worker"]
+    volumes:
+      - ./data:${PWD}/data
+      - ./out:${PWD}/out
+      - ./voices:/app/voices:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - api

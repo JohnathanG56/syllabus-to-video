@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Syllabus to Video</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">∑▶</span>
+      <span>Syllabus&nbsp;to&nbsp;Video</span>
+    </div>
+    <span class="tagline">Upload a syllabus. Get narrated, animated lessons for every topic.</span>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <section class="card">
+        <h2>New syllabus</h2>
+        <form id="upload-form">
+          <label class="dropzone" id="dropzone">
+            <input type="file" id="file" accept=".pdf,.txt,.md,text/plain,application/pdf" hidden>
+            <span class="dz-main" id="dz-label">Drop a PDF or text file</span>
+            <span class="dz-sub">or click to browse</span>
+          </label>
+          <div class="or">or paste text</div>
+          <textarea id="text" rows="5" placeholder="Week 1: Vectors and linear combinations&#10;Week 2: ..."></textarea>
+          <button type="submit" id="submit">Generate lessons</button>
+          <p class="form-msg" id="form-msg" role="status"></p>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>Recent</h2>
+        <ul class="recent" id="recent"><li class="muted">Nothing yet.</li></ul>
+      </section>
+    </aside>
+
+    <section class="content" id="content">
+      <div class="empty">
+        <h1>Turn a course outline into short 3Blue1Brown-style lessons.</h1>
+        <ol class="how">
+          <li><b>Topics.</b> An LLM reads the syllabus and orders the teachable topics.</li>
+          <li><b>Script and narration.</b> Each topic becomes a 60–120&nbsp;s script; Piper reads it aloud first.</li>
+          <li><b>Animation.</b> The LLM writes Manim code timed to the narration. It is checked, rendered in a locked-down sandbox, and repaired automatically if it fails.</li>
+          <li><b>Assembly.</b> Video, voice and captions are muxed with ffmpeg.</li>
+        </ol>
+      </div>
+    </section>
+  </main>
+
+  <template id="topic-tpl">
+    <article class="topic">
+      <div class="topic-head">
+        <span class="num"></span>
+        <h3 class="title"></h3>
+        <span class="pill"></span>
+      </div>
+      <ol class="stepper"></ol>
+      <div class="media"></div>
+      <details class="objectives"><summary>Objectives</summary><ul></ul></details>
+      <p class="note"></p>
+    </article>
+  </template>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

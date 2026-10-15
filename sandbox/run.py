@@ -122,8 +122,12 @@ class DockerRunner(Runner):
     name = "docker"
 
     def __init__(self, image: str, memory: str = "2g", cpus: str = "2", pids_limit: int = 256,
-                 docker_bin: str = "docker", tmpfs_size: str = "512m"):
+                 docker_bin: str = "docker", tmpfs_size: str = "512m", mount_entry: bool = True):
         self.image = image
+        # Mount the host's render_entry.py over the copy baked into the image (keeps
+        # them in sync during development). Turn off when the worker itself runs in
+        # a container, because bind-mount sources are resolved on the Docker host.
+        self.mount_entry = mount_entry
         self.memory = memory
         self.cpus = cpus
         self.pids_limit = pids_limit
@@ -145,7 +149,7 @@ class DockerRunner(Runner):
             "--cap-drop", "ALL",
             "-e", "HOME=/tmp",
             "-v", f"{Path(scene_file).resolve()}:/work/scene.py:ro",
-            "-v", f"{ENTRY_SCRIPT}:{CONTAINER_ENTRY}:ro",
+            *(["-v", f"{ENTRY_SCRIPT}:{CONTAINER_ENTRY}:ro"] if self.mount_entry else []),
             "-v", f"{Path(out_dir).resolve()}:/out",
             self.image,
             "python", CONTAINER_ENTRY, "/work/scene.py", "/out", quality, scene_name,
@@ -273,7 +277,7 @@ def get_runner(settings=None) -> Runner:
         settings = get_settings()
     backend = settings.render_backend
     if backend == "docker":
-        return DockerRunner(settings.sandbox_image)
+        return DockerRunner(settings.sandbox_image, mount_entry=settings.sandbox_mount_entry)
     if backend == "local":
         return LocalRunner()
     raise ValueError(f"RENDER_BACKEND must be 'docker' or 'local', got {backend!r}")

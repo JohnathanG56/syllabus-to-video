@@ -132,6 +132,12 @@ def test_docker_command_has_all_hardening_flags(tmp_path):
                                               "/out", "l", "LessonScene"]
 
 
+def test_docker_command_can_use_baked_in_entry_script(tmp_path):
+    cmd = DockerRunner("img", mount_entry=False).build_command(tmp_path / "s.py", tmp_path / "o", "m", "c")
+    assert not any("render_entry.py:" in part for part in cmd)
+    assert cmd[-3:] == ["/out", "m", "LessonScene"]
+
+
 def test_get_runner_selects_backend(env, monkeypatch):
     from core.config import get_settings
     monkeypatch.setenv("RENDER_BACKEND", "docker")
