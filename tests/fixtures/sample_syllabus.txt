@@ -1,0 +1,24 @@
+MATH 33A: Linear Algebra and Applications
+Fall Quarter - Sample Syllabus (fictional, for testing)
+
+Instructor: Dr. A. Example
+Office hours: Tuesdays 2-4pm, Math Sciences 6100
+Textbook: Linear Algebra and Its Applications (any edition)
+
+Grading
+Homework 20%, Midterm 1 20%, Midterm 2 20%, Final 40%.
+Late homework is not accepted. The lowest homework score is dropped.
+
+Course Schedule
+Week 1: Vectors in R^n, vector addition and scalar multiplication, linear combinations and span.
+Week 2: Systems of linear equations, row reduction, echelon forms.
+Week 3: Matrix-vector products; linear transformations of the plane (rotations, shears, reflections).
+Week 4: Matrix multiplication as composition of transformations. Midterm 1 (Friday).
+Week 5: Inverse matrices; the determinant as an area scaling factor.
+Week 6: Subspaces, basis, dimension; column space and null space.
+Week 7: Eigenvalues and eigenvectors; characteristic polynomial. Midterm 2 (Friday).
+Week 8: Diagonalization and change of basis.
+Week 9: Dot product, orthogonality, orthogonal projections, Gram-Schmidt.
+Week 10: Least squares and linear regression. Review.
+
+Academic integrity: all submitted work must be your own.
