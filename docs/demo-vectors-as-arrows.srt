@@ -1,0 +1,92 @@
+1
+00:00:00,000 --> 00:00:04,155
+Let's start with the simplest object
+in linear algebra, the vector.
+
+2
+00:00:04,155 --> 00:00:08,744
+Picture an arrow that begins at the
+origin of a grid and points somewhere.
+
+3
+00:00:08,744 --> 00:00:11,287
+Only its length and its direction matter.
+
+4
+00:00:11,287 --> 00:00:14,140
+Think of it as an
+instruction for how to move.
+
+5
+00:00:14,140 --> 00:00:15,752
+We will call this arrow v.
+
+6
+00:00:16,102 --> 00:00:19,719
+To describe v with numbers,
+read off where its tip lands.
+
+7
+00:00:19,719 --> 00:00:23,081
+Walk three units along the
+x axis, then two units up.
+
+8
+00:00:23,081 --> 00:00:28,157
+Those two numbers, three and two, stacked
+in a column, are the coordinates of v.
+
+9
+00:00:28,157 --> 00:00:33,296
+Every arrow on this grid matches exactly
+one such pair, so the list and the arrow
+
+10
+00:00:33,296 --> 00:00:34,502
+are the same thing.
+
+11
+00:00:34,852 --> 00:00:37,040
+Adding vectors has a lovely picture.
+
+12
+00:00:37,040 --> 00:00:41,354
+Take a second vector, w, and slide
+it so its tail sits on the tip of v.
+
+13
+00:00:41,354 --> 00:00:44,878
+The arrow from the origin to
+where you end up is v plus w.
+
+14
+00:00:44,878 --> 00:00:48,160
+With numbers, you simply add
+the matching coordinates:
+
+15
+00:00:48,160 --> 00:00:52,292
+three plus one is four, and two plus
+negative three is negative one.
+
+16
+00:00:52,642 --> 00:00:56,535
+Multiplying by a number, called
+a scalar, stretches the arrow.
+
+17
+00:00:56,535 --> 00:01:01,808
+Two times v points the same way but is twice
+as long, and negative one times v flips
+
+18
+00:01:01,808 --> 00:01:02,436
+it around.
+
+19
+00:01:02,436 --> 00:01:04,508
+Adding arrows and scaling arrows:
+
+20
+00:01:04,508 --> 00:01:07,082
+that is the whole game of linear algebra.

@@ -112,7 +112,7 @@ function topicCard(t, existing) {
     if (!media.querySelector("video")) {
       media.innerHTML = "";
       const v = document.createElement("video");
-      v.controls = true; v.preload = "metadata"; v.src = t.video_url;
+      v.controls = true; v.preload = "metadata"; v.src = `${t.video_url}#t=4`;  // skip the blank first frame
       if (t.captions_url) {
         const tr = document.createElement("track");
         tr.kind = "captions"; tr.srclang = "en"; tr.label = "English"; tr.src = t.captions_url;

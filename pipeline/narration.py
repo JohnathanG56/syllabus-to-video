@@ -21,6 +21,7 @@ from pathlib import Path
 from core.schemas import WORDS_PER_SECOND, LessonScript
 
 SAMPLE_RATE = 22050
+LOCAL_PIPER_BIN = Path(__file__).resolve().parent.parent / "voices" / "piper" / "piper"
 
 
 class NarrationError(RuntimeError):
@@ -38,31 +39,38 @@ class TTS(ABC):
 class PiperPythonTTS(TTS):
     name = "piper-python"
 
-    def __init__(self, voice_path: Path):
+    def __init__(self, voice_path: Path, length_scale: float = 1.0):
         _require_voice(voice_path)
         from piper import PiperVoice  # lazy: optional dependency
         self.voice = PiperVoice.load(str(voice_path))
+        self.length_scale = length_scale
         self._lock = threading.Lock()  # one synthesis at a time per loaded voice
 
     def synthesize(self, text: str, wav_path: Path) -> None:
         with self._lock, wave.open(str(wav_path), "wb") as wf:
             if hasattr(self.voice, "synthesize_wav"):  # piper-tts >= 1.3
-                self.voice.synthesize_wav(text, wf)
+                try:
+                    from piper import SynthesisConfig
+                    self.voice.synthesize_wav(text, wf, syn_config=SynthesisConfig(length_scale=self.length_scale))
+                except (ImportError, TypeError):
+                    self.voice.synthesize_wav(text, wf)
             else:  # piper-tts 1.2.x
-                self.voice.synthesize(text, wf)
+                self.voice.synthesize(text, wf, length_scale=self.length_scale)
 
 
 class PiperCLITTS(TTS):
     name = "piper-cli"
 
-    def __init__(self, binary: str, voice_path: Path, timeout_s: float = 120):
+    def __init__(self, binary: str, voice_path: Path, length_scale: float = 1.0, timeout_s: float = 120):
         _require_voice(voice_path)
         if shutil.which(binary) is None and not Path(binary).exists():
             raise NarrationError(f"piper binary not found: {binary}")
         self.binary, self.voice_path, self.timeout_s = binary, voice_path, timeout_s
+        self.length_scale = length_scale
 
     def synthesize(self, text: str, wav_path: Path) -> None:
-        r = subprocess.run([self.binary, "--model", str(self.voice_path), "--output_file", str(wav_path)],
+        r = subprocess.run([self.binary, "--model", str(self.voice_path), "--output_file", str(wav_path),
+                            "--length_scale", str(self.length_scale)],
                            input=text, capture_output=True, text=True, timeout=self.timeout_s)
         if r.returncode != 0 or not wav_path.exists():
             raise NarrationError(f"piper failed ({r.returncode}): {r.stderr[-500:]}")
@@ -93,9 +101,12 @@ def get_tts(settings=None) -> TTS:
         return SilentTTS()
     if backend == "piper-python" or (backend == "auto" and importlib.util.find_spec("piper")
                                      and not settings.piper_bin):
-        return PiperPythonTTS(settings.piper_voice)
-    if backend in ("piper-cli", "auto") and settings.piper_bin:
-        return PiperCLITTS(settings.piper_bin, settings.piper_voice)
+        return PiperPythonTTS(settings.piper_voice, settings.piper_length_scale)
+    binary = settings.piper_bin
+    if binary is None and LOCAL_PIPER_BIN.exists():  # fetched by download_voice.py --binary
+        binary = str(LOCAL_PIPER_BIN)
+    if backend in ("piper-cli", "auto") and binary:
+        return PiperCLITTS(binary, settings.piper_voice, settings.piper_length_scale)
     raise NarrationError("No TTS engine available: `pip install piper-tts`, or set PIPER_BIN, "
                          "or TTS_BACKEND=silent for a dry run.")
 

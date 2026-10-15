@@ -64,8 +64,9 @@ def test_narrate_script_durations_include_pad_and_resume(tmp_path):
 
 
 def test_silent_tts_tracks_word_count(tmp_path):
-    SilentTTS().synthesize(" ".join(["word"] * 25), tmp_path / "s.wav")
-    assert wav_duration(tmp_path / "s.wav") == pytest.approx(10.0, abs=0.01)
+    from core.schemas import WORDS_PER_SECOND
+    SilentTTS().synthesize(" ".join(["word"] * 30), tmp_path / "s.wav")
+    assert wav_duration(tmp_path / "s.wav") == pytest.approx(30 / WORDS_PER_SECOND, abs=0.01)
 
 
 def test_get_tts_selection(env, monkeypatch, tmp_path):

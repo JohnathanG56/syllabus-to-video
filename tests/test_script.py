@@ -38,7 +38,8 @@ def test_write_script_fails_after_two_bad_outputs():
 def test_estimated_seconds():
     from core.schemas import LessonScript
     s = LessonScript.model_validate(script(4, 45))
-    assert s.estimated_seconds() == pytest.approx(180 / 2.5)
+    from core.schemas import WORDS_PER_SECOND
+    assert s.estimated_seconds() == pytest.approx(180 / WORDS_PER_SECOND)
 
 
 def test_all_prompts_have_system_and_user_parts():

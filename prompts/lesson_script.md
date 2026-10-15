@@ -6,7 +6,7 @@ A script is 3-6 segments. Each segment has:
 - "key_equation": the single most important formula for that segment as LaTeX (e.g. "a^2 + b^2 = c^2"), or null if the segment has no formula.
 
 Hard rules:
-1. Total length 60-120 seconds of speech: about 150-300 words of narration in total.
+1. Total length 60-120 seconds of speech: about 180-330 words of narration in total.
 2. One idea per segment. Build intuition first, then the formal statement, then a tiny worked example or "why it matters" close.
 3. Every visual must be drawable with basic Manim primitives ONLY: Text, MathTex, Axes / NumberPlane, function plots, Dot, Line, Arrow, Vector, Circle, Square, Rectangle, Polygon, Brace, SurroundingRectangle, and animations like Create, Write, FadeIn, FadeOut, Transform, ReplacementTransform, MoveAlongPath, Rotate, Indicate, and object.animate.
 4. No external assets: no images, SVG files, sounds, icons, photos, logos, 3D scenes, or real-world objects that would need artwork. Prefer geometry, graphs, arrows, number lines, matrices of numbers, and labeled shapes.

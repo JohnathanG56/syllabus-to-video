@@ -75,6 +75,7 @@ class Settings:
     tts_backend: str  # "auto" | "piper-python" | "piper-cli" | "silent"
     piper_voice: Path
     piper_bin: str | None
+    piper_length_scale: float  # >1 speaks slower
     segment_pad_s: float
     # --- assembly ---
     burn_captions: bool
@@ -109,6 +110,7 @@ def get_settings() -> Settings:
         tts_backend=_env("TTS_BACKEND", "auto").lower(),
         piper_voice=_path("PIPER_VOICE", REPO_ROOT / "voices" / "en_US-lessac-medium.onnx"),
         piper_bin=_env("PIPER_BIN"),
+        piper_length_scale=_env_float("PIPER_LENGTH_SCALE", 1.1),
         segment_pad_s=_env_float("SEGMENT_PAD_S", 0.35),
         burn_captions=_env_bool("BURN_CAPTIONS", False),
         max_topics=_env_int("MAX_TOPICS", 8),

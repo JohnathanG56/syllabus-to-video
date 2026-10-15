@@ -10,7 +10,9 @@ import re
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 # Speaking rate used to sanity-check script length before we pay for TTS.
-WORDS_PER_SECOND = 2.5
+# Measured: Piper en_US-lessac-medium speaks ~3.1-3.3 words/s including
+# sentence pauses (length_scale 1.0-1.15); a human narrator is ~2.5.
+WORDS_PER_SECOND = 3.0
 MIN_LESSON_S, MAX_LESSON_S = 60, 120
 
 
@@ -57,7 +59,7 @@ class LessonScript(Strict):
     @model_validator(mode="after")
     def _length_fits_60_to_120s(self) -> "LessonScript":
         words = sum(len(re.findall(r"\S+", s.narration)) for s in self.segments)
-        lo = int(MIN_LESSON_S * WORDS_PER_SECOND * 0.85)
+        lo = int(MIN_LESSON_S * WORDS_PER_SECOND * 0.8)
         hi = int(MAX_LESSON_S * WORDS_PER_SECOND * 1.1)
         if not lo <= words <= hi:
             raise ValueError(
