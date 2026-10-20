@@ -1,5 +1,7 @@
 # Syllabus-to-Video
 
+[![CI](https://github.com/JohnathanG56/syllabus-to-video/actions/workflows/ci.yml/badge.svg)](https://github.com/JohnathanG56/syllabus-to-video/actions/workflows/ci.yml)
+
 Upload a course syllabus and get a short, narrated, 3Blue1Brown-style animated lesson for each topic.
 
 An LLM reads the syllabus, writes a 60–120 s script for each topic and then writes **Manim** animation code for it. That code is **untrusted**, so it is checked by an AST validator and rendered inside a locked-down Docker sandbox. When a render fails, the error is classified and sent back to the model in a **self-repair loop** (at most K = 3 repairs). Narration comes from **Piper** TTS, and **ffmpeg** muxes video, voice and captions together. A SQLite-backed job queue and a small web UI tie it together.
@@ -90,7 +92,7 @@ The repair prompt contains the error class, its hint, a **trimmed traceback** (s
 
 **Layer 2: container sandbox (the real boundary).** Each render runs in a throwaway container: `--network none`, `--read-only` root FS with a 512 MB tmpfs `/tmp`, `--memory 2g --memory-swap 2g`, `--cpus 2`, `--pids-limit 256`, `--cap-drop ALL`, `--security-opt no-new-privileges`, and an unprivileged uid. Only the scene file (read-only) and an output dir are mounted. The host kills the container by name on timeout. The container never sees the API key, because no environment is passed through. Tests prove these properties ([tests/test_sandbox.py](tests/test_sandbox.py)): network attempts fail, writes outside `/out` fail, 1,000 threads hit the pids limit, a memory hog is reported as `oom`, an infinite loop is killed, and no `stv-render-*` container is left running.
 
-**Residual risks (be honest about them in an interview):** a container is not a VM, so a kernel exploit could escape it. gVisor (`--runtime=runsc`) or Firecracker would be the next step. Mounting `docker.sock` into the worker container (compose mode) gives that container root-equivalent control of the host; the recommended setup runs the worker natively. LaTeX inside the sandbox could be abused (`\write18`), and the sandbox contains that too. `RENDER_BACKEND=local` is **not** a sandbox: it adds rlimits, a timeout and a scrubbed environment, and exists only for development.
+**Residual risks:** a container is not a VM, so a kernel exploit could escape it. gVisor (`--runtime=runsc`) or Firecracker would be the next step. Mounting `docker.sock` into the worker container (compose mode) gives that container root-equivalent control of the host; the recommended setup runs the worker natively. LaTeX inside the sandbox could be abused (`\write18`), and the sandbox contains that too. `RENDER_BACKEND=local` is **not** a sandbox: it adds rlimits, a timeout and a scrubbed environment, and exists only for development.
 
 ## Setup on an Apple Silicon Mac
 
@@ -156,23 +158,22 @@ For each topic the harness runs: LLM script → durations → LLM code → sandb
 
 **It refuses to run without `ANTHROPIC_API_KEY` and `LLM_MODEL`.** No code path produces numbers without a real model. `--fake-llm` exists only to test the harness, and every file it writes is stamped `SYNTHETIC`.
 
-### Resume numbers (fill from your eval run)
+### Eval results
 
-> Nothing in this table has been measured yet. Fill it from `eval/results/<timestamp>/summary.md` after running the eval with your key.
-
+<!-- Fill from eval/results/<timestamp>/summary.md after a real run:
 | Metric | Value |
 |---|---|
-| Model (`LLM_MODEL`) | _fill_ |
+| Model (`LLM_MODEL`) | |
 | Topics evaluated | 25 |
-| First-try render success | _fill_ % |
-| Success after ≤ 3 repairs | _fill_ % |
-| Avg attempts per topic | _fill_ |
-| Most common first-attempt failure class | _fill_ |
-| Avg wall time per video (script → validated render) | _fill_ s |
-| Avg LLM tokens per video (in / out) | _fill_ |
-| Est. LLM cost per video (tokens × your model's current price) | $ _fill_ |
+| First-try render success | % |
+| Success after <= 3 repairs | % |
+| Avg attempts per topic | |
+| Most common first-attempt failure class | |
+| Avg wall time per video | s |
+| Avg LLM tokens per video (in / out) | |
+-->
 
-### Measured in the cloud build container (not on your Mac)
+### Render timings (hand-written demo scenes)
 
 These numbers come from the environment the project was built in: Linux x86_64, 2 vCPUs, 7 GB RAM, `RENDER_BACKEND=local`. They describe the hand-written demo scenes, not LLM output.
 
@@ -250,4 +251,3 @@ docs/       demo videos, GIF, captions
 - No auth or multi-tenant isolation in the API. Uploads are capped at 10 MB, but anything public needs auth, rate limits and per-user quotas.
 - The sandbox is a container, not a VM. Use gVisor or Firecracker for hostile multi-tenant use.
 
-See [LEARN.md](LEARN.md) for an interview-prep walkthrough of the codebase.
