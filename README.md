@@ -8,9 +8,9 @@ An LLM reads the syllabus, writes a 60–120 s script for each topic and then wr
 
 ![demo](docs/demo.gif)
 
-**Demo outputs:** [`docs/demo-vectors-as-arrows.mp4`](docs/demo-vectors-as-arrows.mp4) (67.4 s) · [`docs/demo-pythagorean-theorem.mp4`](docs/demo-pythagorean-theorem.mp4) (63.1 s) · [captions](docs/demo-vectors-as-arrows.srt)
+**Demo:** [`docs/demo-sets-claude.mp4`](docs/demo-sets-claude.mp4), "Sets and set operations", generated end to end from a two-topic Discrete Structures syllabus with `claude-sonnet-5-5`.
 
-> The two demo videos came from `python -m demo`, which runs the whole pipeline with a **fake LLM** that returns hand-written scripts and Manim code. Everything after the LLM was real: Piper narration, validation, Manim renders, the repair loop and ffmpeg. The vectors lesson's first code draft deliberately uses the manimgl-era `ShowCreation`. That raised a real `NameError` in the render, and the repair loop fixed it. See [How these demo files were made](#how-the-demo-files-in-docs-were-made) for exactly what ran where.
+> Claude pulled the topics out of the syllabus, wrote the lesson script and wrote the Manim code; Piper narrated it; the code rendered inside the Docker sandbox. Claude's first draft of this lesson had a syntax error. The validator caught it before anything ran, the repair loop sent the error back, and the second draft rendered. The other lesson rendered on the first try. Details in [Results from a real run](#results-from-a-real-run).
 
 ---
 
@@ -173,26 +173,23 @@ For each topic the harness runs: LLM script → durations → LLM code → sandb
 | Avg LLM tokens per video (in / out) | |
 -->
 
-### Render timings (hand-written demo scenes)
+### Results from a real run
 
-These numbers come from the environment the project was built in: Linux x86_64, 2 vCPUs, 7 GB RAM, `RENDER_BACKEND=local`. They describe the hand-written demo scenes, not LLM output.
+One syllabus, 2 topics, `claude-sonnet-5-5`, Docker sandbox on an Apple Silicon Mac:
 
-| What | Measured |
-|---|---|
-| `python -m demo` wall time, 2 lessons, both topics in parallel | 113.8 s |
-| Validation render (-ql, 480p15) of a ~65 s lesson | 19.3 s and 21.3 s |
-| Final render (-qm, 720p30) of the same lessons | 53.6 s and 47.6 s |
-| Failing first attempt (`NameError`) caught and classified | 2.3 s |
-| Output length vs narration total | 67.4 s / 67.4 s and 63.0 s / 63.0 s |
-| Test suite | 225 tests, all passing (incl. Docker, Manim and Piper tests; see caveats below) |
+| | Sets and set operations | Functions as mappings |
+|---|---|---|
+| First draft | Syntax error, caught before render | Rendered |
+| Drafts until a valid render | 2 (one repair) | 1 |
+| Validation render (480p15) | 8.7 s | 8.6 s |
+| Final render (720p30) | 20.8 s | 18.5 s |
+
+The full run used about 41K input and 37K output tokens across topic extraction, 2 scripts, code generation and one repair. That count includes calls retried after a Wi-Fi drop mid-run, which the worker recovered from on its own.
 
 ## How the demo files in `docs/` were made
 
-The build container could not reach Docker Hub or PyPI, so:
-- **Manim 0.19.0** was built from its GitHub sources (with PyAV, ManimPango, pycairo, mapbox-earcut and moderngl compiled locally). `skia-pathops`, which Manim uses only for boolean shape operations, was replaced by a local stub. The demo does not use those operations.
-- **`dvisvgm` was unavailable**, so MathTex went through a small shim (`latex → dvipdfmx → pdftocairo -svg`) that lives outside this repo. The real sandbox image ships the real dvisvgm.
-- Renders used **`RENDER_BACKEND=local`**. The **Docker runner** was tested against a locally assembled image (the same Manim build in a minimal rootfs, run with the exact hardening flags), because `manimcommunity/manim` could not be pulled. On your Mac, `docker build sandbox/` uses the official image, and CI does the same.
-- **Piper** was the standalone Piper binary (`scripts/download_voice.py --binary`), with the `en_US-lessac-medium` voice from the rhasspy/piper GitHub release. Your Mac will use `pip install piper-tts` and the Hugging Face voice.
+- **`demo-sets-claude.mp4` and `demo.gif`:** a real run on a Mac with Claude, Piper and the Docker sandbox (see above). The GIF is an 8-second clip of the video.
+- **`demo-vectors-as-arrows.mp4` and `demo-pythagorean-theorem.mp4`:** made with `python -m demo`, which runs the whole pipeline with a **fake LLM** that returns hand-written scripts and Manim code, so it needs no API key. Everything after the LLM is real. The vectors lesson's first draft deliberately uses the manimgl-era `ShowCreation`, which raises a real `NameError` that the repair loop fixes.
 
 ## Tests
 
