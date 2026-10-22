@@ -75,6 +75,9 @@ class Worker:
         if job["kind"] == "extract_topics":
             self.db.update_syllabus(job["ref_id"], status="failed", error=message[:2000])
         elif job["kind"] == "process_topic":
+            topic = self.db.get_topic(job["ref_id"])
+            if topic and topic["status"] == "done":
+                return  # another attempt already finished this topic; keep its video and clean state
             self.db.update_topic(job["ref_id"], status="failed", error=message[:2000])
 
     def run_once(self) -> bool:

@@ -137,3 +137,20 @@ def test_threaded_worker_respects_render_concurrency(env, monkeypatch):
     assert not t.is_alive()
     assert all(tp["status"] == "done" for tp in db.list_topics(sid))
     assert w.runner.peak == 1
+
+
+def test_late_failure_does_not_overwrite_a_finished_topic(env):
+    """A crashed attempt that gives up after another attempt already finished
+    the topic must not flip it to failed or leave a stale error on the page."""
+    client = TestClient(create_app(env))
+    sid = client.post("/syllabi", data={"text": "Week 1: vectors. Week 2: transformations. " * 3}).json()["id"]
+    w = make_worker(env)
+    w.drain()
+    topic = client.get(f"/syllabi/{sid}").json()["topics"][0]
+    assert topic["status"] == "done"
+
+    w._mark_failed({"kind": "process_topic", "ref_id": topic["id"]}, "APIConnectionError: Connection error.")
+
+    after = client.get(f"/syllabi/{sid}").json()["topics"][0]
+    assert after["status"] == "done"
+    assert not after.get("error")

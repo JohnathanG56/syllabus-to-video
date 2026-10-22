@@ -167,5 +167,5 @@ class Pipeline:
             return self._fail(topic_id, f"assembly failed: {exc}")
         db.update_topic(topic_id, status="assembled")
         rel = final_out.relative_to(s.out_dir).as_posix()
-        db.update_topic(topic_id, status="done", video_path=rel)
+        db.update_topic(topic_id, status="done", video_path=rel, error=None)
         return "done"
